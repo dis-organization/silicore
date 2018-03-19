@@ -1,0 +1,32 @@
+Package: silicore
+Title: A REALLY Core Silicate
+Version: 0.0.0.9001
+Authors@R: c(person("Michael D.","Sumner", role = c("aut", "cre"), email = "mdsumner@gmail.com"), 
+             person("John", "Corbett", role = "ctb", comment = "the original inspiration"), 
+             person("Simon", "Wotherspoon", role = "ctb"), 
+             person("Kent", "Johnson", role = "dtc"), 
+             person("Mark", "Padgham", role = "aut")
+             )
+Description: A core for silicate. 
+Depends:
+    R (>= 3.3.2)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Suggests:
+    covr,
+    knitr,
+    rmarkdown,
+    testthat
+RoxygenNote: 6.0.1
+Imports: 
+    dplyr,
+    gibble,
+    methods,
+    purrr,
+    rlang,
+    silicate,
+    magrittr
+VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
+Remotes: mdsumner/gibble

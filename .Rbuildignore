@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^docs$
+^README\.Rmd$
+^\.travis\.yml$
+^codecov\.yml$
+^appveyor\.yml$
+^inst/examples
+^R/old

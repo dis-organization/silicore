@@ -1,0 +1,112 @@
+---
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+
+# Overview
+
+sc0 is a super stripped down core for silicate. All it has is the SC0 model, which is
+
+* `coord`, all coordinates from the input
+* `segment`, the .vx0 and .vx1 index of every input segment (row of coord)
+* `geometry` map (the record of any paths, `cumsum(nrow)` is a count-index into coord)
+* `data` (the feature table)
+
+Compare with silicate: 
+
+```{r}
+library(silicate)
+library(silicore)
+sc_coord(minimal_mesh)
+SC0(minimal_mesh)$coord
+```
+
+```{r}
+sc_edge(minimal_mesh)
+SC0(minimal_mesh)$segment
+```
+
+```{r}
+sc_path(minimal_mesh)
+SC0(minimal_mesh)$geometry
+```
+
+```{r}
+sc_object(minimal_mesh)
+SC0(minimal_mesh)$data
+```
+
+
+Performance is good. 
+
+```{r}
+rbenchmark::benchmark(SC0(minimal_mesh), 
+                      SC(minimal_mesh))
+```
+
+
+```{r}
+rbenchmark::benchmark(SC0(inlandwaters), 
+                      SC(inlandwaters), replications = 10)
+```
+
+For now we are ignoring
+
+* relational indexes
+* geometric normalization (might be x/y, x/y/z, other spaces ...)
+* any explicitly sequential storage, i.e. ARC and PATH probably will be rebuilt completely
+
+
+We import the internal `silicate:::get_projection.sf` and for now rely on `gibble` to give the mapping between coordinates and paths. 
+
+
+This is being tried because silicate was originally defined around PATH, and even
+SC was defined in terms of it - unnecessarily. Once [we tried](http://rpubs.com/cyclemumner/367272) a purely tidyverse approach to the problem of decomposing paths to edges it seemed natural to use that as a basis. It means that we can keep the run-length index (gibble) as a way of storing higher level groupings, including holes and multipolygons *optionally*. Here we don't need to encode the actual sequence of coordinates along paths or arcs, because i) it's implicit in geometry/coord tables prior to vertex de-duplication and ii) we might discard them favouring edge-traversal as a way of reconstructing sequences. 
+
+
+Can we get sense out of it? 
+
+```{r}
+x <- SC0(minimal_mesh)
+library(ggplot2)
+library(dplyr)
+tab <- tibble(xs = x$coord$x_[x$segment$.vx0], ys = x$coord$y_[x$segment$.vx0], 
+              xend = x$coord$x_[x$segment$.vx1], yend = x$coord$y_[x$segment$.vx1])
+ggplot(tab, aes(xs, ys, xend  =xend, yend = yend)) + geom_segment()
+
+x <- SC0(inlandwaters)
+## the  sixth object
+tst <- rep(x$geometry$object, x$geometry$nrow) == 4
+idx <- which(tst)
+g <-  rep(x$geometry$path, x$geometry$nrow)
+segment <- x$segment %>% dplyr::filter(.vx0 %in% idx & .vx1 %in% idx)
+tab <- tibble(xs = x$coord$x_[segment$.vx0], ys = x$coord$y_[segment$.vx0], 
+              xend = x$coord$x_[segment$.vx1], yend = x$coord$y_[segment$.vx1], 
+              path = g[segment$.vx0])
+ggplot(tab, aes(xs, ys, xend  =xend, yend = yend, colour = factor(path))) + geom_segment() + guides(colour = FALSE)
+
+
+x <- SC0(dodgr::hampi)
+g <-  rep(x$geometry$path, x$geometry$nrow)
+tab <- tibble(xs = x$coord$x_[x$segment$.vx0], ys = x$coord$y_[x$segment$.vx0], 
+              xend = x$coord$x_[x$segment$.vx1], yend = x$coord$y_[x$segment$.vx1], 
+              path = g[x$segment$.vx0])
+ggplot(tab, aes(xs, ys, xend  =xend, yend = yend, colour = path)) + geom_segment()
+
+```
+
+
+If anyone can come up with a better name than `gibble` or `geometry` or `geometry map`
+for that thing, I'll be really grateful. 
