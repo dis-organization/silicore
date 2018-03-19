@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 # Overview
 
-sc0 is a super stripped down core for silicate. All it has is the SC0 model, which is
+This is a super stripped down core for silicate. All it has is the SC0 model, which is
 
 * `coord`, all coordinates from the input
 * `segment`, the .vx0 and .vx1 index of every input segment (row of coord)
@@ -29,23 +29,23 @@ Compare with silicate:
 ```{r}
 library(silicate)
 library(silicore)
-sc_coord(minimal_mesh)
-SC0(minimal_mesh)$coord
+str(sc_coord(minimal_mesh))
+str(SC0(minimal_mesh)$coord) ## exactly the same
 ```
 
 ```{r}
-sc_edge(minimal_mesh)
-SC0(minimal_mesh)$segment
+sc_edge(minimal_mesh)     ## relational labels
+SC0(minimal_mesh)$segment ## purely structure index
 ```
 
 ```{r}
-sc_path(minimal_mesh)
-SC0(minimal_mesh)$geometry
+sc_path(minimal_mesh)      
+SC0(minimal_mesh)$geometry ## no relational labels
 ```
 
 ```{r}
-sc_object(minimal_mesh)
-SC0(minimal_mesh)$data
+sc_object(minimal_mesh)  
+SC0(minimal_mesh)$data  ## the same, geometry$object is the row number
 ```
 
 

@@ -3,7 +3,7 @@
 Overview
 ========
 
-sc0 is a super stripped down core for silicate. All it has is the SC0 model, which is
+This is a super stripped down core for silicate. All it has is the SC0 model, which is
 
 -   `coord`, all coordinates from the input
 -   `segment`, the .vx0 and .vx1 index of every input segment (row of coord)
@@ -15,75 +15,37 @@ Compare with silicate:
 ``` r
 library(silicate)
 library(silicore)
-sc_coord(minimal_mesh)
-#> # A tibble: 19 x 2
-#>       x_    y_
-#>    <dbl> <dbl>
-#>  1 0.    0.   
-#>  2 0.    1.00 
-#>  3 0.750 1.00 
-#>  4 1.00  0.800
-#>  5 0.500 0.700
-#>  6 0.800 0.600
-#>  7 0.690 0.   
-#>  8 0.    0.   
-#>  9 0.200 0.200
-#> 10 0.500 0.200
-#> 11 0.500 0.400
-#> 12 0.300 0.600
-#> 13 0.200 0.400
-#> 14 0.200 0.200
-#> 15 0.690 0.   
-#> 16 0.800 0.600
-#> 17 1.10  0.630
-#> 18 1.23  0.300
-#> 19 0.690 0.
-SC0(minimal_mesh)$coord
-#> # A tibble: 19 x 2
-#>       x_    y_
-#>    <dbl> <dbl>
-#>  1 0.    0.   
-#>  2 0.    1.00 
-#>  3 0.750 1.00 
-#>  4 1.00  0.800
-#>  5 0.500 0.700
-#>  6 0.800 0.600
-#>  7 0.690 0.   
-#>  8 0.    0.   
-#>  9 0.200 0.200
-#> 10 0.500 0.200
-#> 11 0.500 0.400
-#> 12 0.300 0.600
-#> 13 0.200 0.400
-#> 14 0.200 0.200
-#> 15 0.690 0.   
-#> 16 0.800 0.600
-#> 17 1.10  0.630
-#> 18 1.23  0.300
-#> 19 0.690 0.
+str(sc_coord(minimal_mesh))
+#> Classes 'tbl_df', 'tbl' and 'data.frame':    19 obs. of  2 variables:
+#>  $ x_: num  0 0 0.75 1 0.5 0.8 0.69 0 0.2 0.5 ...
+#>  $ y_: num  0 1 1 0.8 0.7 0.6 0 0 0.2 0.2 ...
+str(SC0(minimal_mesh)$coord) ## exactly the same
+#> Classes 'tbl_df', 'tbl' and 'data.frame':    19 obs. of  2 variables:
+#>  $ x_: num  0 0 0.75 1 0.5 0.8 0.69 0 0.2 0.5 ...
+#>  $ y_: num  0 1 1 0.8 0.7 0.6 0 0 0.2 0.2 ...
 ```
 
 ``` r
-sc_edge(minimal_mesh)
+sc_edge(minimal_mesh)     ## relational labels
 #> # A tibble: 15 x 3
 #>    .vertex0   .vertex1   edge_     
 #>    <chr>      <chr>      <chr>     
-#>  1 9de16738b2 e1a291337b fbf2da3c6c
-#>  2 e1a291337b 0d2483341b 0a1278d394
-#>  3 0d2483341b 3ca4f5ca4c 8ce1cad3ff
-#>  4 3ca4f5ca4c a156f3a93c 42a087d205
-#>  5 a156f3a93c 11ce50bc32 b590566b8c
-#>  6 11ce50bc32 eb3f7e8d38 ca44e65c6d
-#>  7 eb3f7e8d38 9de16738b2 6ecb6a62e3
-#>  8 e61045f605 2a63eb9bcf 24bf4950b2
-#>  9 2a63eb9bcf a347e613ea 9aaeefe540
-#> 10 a347e613ea b5172c424b 36b5b97b37
-#> 11 b5172c424b 16322f7d93 a653da0246
-#> 12 16322f7d93 e61045f605 46168ca83b
-#> 13 11ce50bc32 dc968a70c9 c10227cc14
-#> 14 dc968a70c9 5057e93340 a9bb38610b
-#> 15 5057e93340 eb3f7e8d38 879ab5b953
-SC0(minimal_mesh)$segment
+#>  1 713af8251a 5035049e1a dbcf37ddef
+#>  2 5035049e1a 397b6759c9 8f0741fb5c
+#>  3 397b6759c9 fa3f42c123 b33e91bdb1
+#>  4 fa3f42c123 03e8b4f99c 1946d339d5
+#>  5 03e8b4f99c 21d4bb7a89 8764404069
+#>  6 21d4bb7a89 b5ea053b4c 4670000e0a
+#>  7 b5ea053b4c 713af8251a 9d8a9239a4
+#>  8 ffa1a29f95 f508b128c6 2a1cecbeb2
+#>  9 f508b128c6 a7baf49eda 59be468d05
+#> 10 a7baf49eda fe660e2bc2 138ecc20a1
+#> 11 fe660e2bc2 ef243cad39 e4b4a88555
+#> 12 ef243cad39 ffa1a29f95 f7645063ea
+#> 13 21d4bb7a89 cc4a991b6d e29beb0274
+#> 14 cc4a991b6d b63bbfddf8 39ac1b1cdb
+#> 15 b63bbfddf8 b5ea053b4c 1584e2f3f6
+SC0(minimal_mesh)$segment ## purely structure index
 #> # A tibble: 16 x 2
 #>     .vx0  .vx1
 #>    <int> <int>
@@ -106,14 +68,14 @@ SC0(minimal_mesh)$segment
 ```
 
 ``` r
-sc_path(minimal_mesh)
+sc_path(minimal_mesh)      
 #> # A tibble: 3 x 7
 #>    ncol type         subobject object object_    path_      ncoords_
 #>   <int> <chr>            <int>  <int> <chr>      <chr>         <int>
-#> 1     2 MULTIPOLYGON         1      1 532e1dbcd1 8eed5817f4        8
-#> 2     2 MULTIPOLYGON         1      1 532e1dbcd1 929fc38d22        6
-#> 3     2 MULTIPOLYGON         1      2 24f79d6091 a5459330a8        5
-SC0(minimal_mesh)$geometry
+#> 1     2 MULTIPOLYGON         1      1 4f70cac663 8d2dc8e933        8
+#> 2     2 MULTIPOLYGON         1      1 4f70cac663 e5ef0fda56        6
+#> 3     2 MULTIPOLYGON         1      2 a806eff7b8 62af015982        5
+SC0(minimal_mesh)$geometry ## no relational labels
 #> # A tibble: 3 x 6
 #>    nrow  ncol type         subobject object  path
 #>   <int> <int> <chr>            <int>  <int> <int>
@@ -123,13 +85,13 @@ SC0(minimal_mesh)$geometry
 ```
 
 ``` r
-sc_object(minimal_mesh)
+sc_object(minimal_mesh)  
 #> # A tibble: 2 x 1
 #>       a
 #> * <int>
 #> 1     1
 #> 2     2
-SC0(minimal_mesh)$data
+SC0(minimal_mesh)$data  ## the same, geometry$object is the row number
 #> # A tibble: 2 x 1
 #>       a
 #> * <int>
@@ -143,8 +105,8 @@ Performance is good.
 rbenchmark::benchmark(SC0(minimal_mesh), 
                       SC(minimal_mesh))
 #>                test replications elapsed relative user.self sys.self
-#> 2  SC(minimal_mesh)          100   2.045    1.561     2.044     0.00
-#> 1 SC0(minimal_mesh)          100   1.310    1.000     1.269     0.04
+#> 2  SC(minimal_mesh)          100   2.047    1.555     2.039    0.008
+#> 1 SC0(minimal_mesh)          100   1.316    1.000     1.309    0.008
 #>   user.child sys.child
 #> 2          0         0
 #> 1          0         0
@@ -154,8 +116,8 @@ rbenchmark::benchmark(SC0(minimal_mesh),
 rbenchmark::benchmark(SC0(inlandwaters), 
                       SC(inlandwaters), replications = 10)
 #>                test replications elapsed relative user.self sys.self
-#> 2  SC(inlandwaters)           10  15.005   32.478    14.948    0.052
-#> 1 SC0(inlandwaters)           10   0.462    1.000     0.458    0.004
+#> 2  SC(inlandwaters)           10  15.185   34.047    15.157    0.028
+#> 1 SC0(inlandwaters)           10   0.446    1.000     0.443    0.004
 #>   user.child sys.child
 #> 2          0         0
 #> 1          0         0
