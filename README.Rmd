@@ -110,3 +110,53 @@ ggplot(tab, aes(xs, ys, xend  =xend, yend = yend, colour = path)) + geom_segment
 
 If anyone can come up with a better name than `gibble` or `geometry` or `geometry map`
 for that thing, I'll be really grateful. 
+
+## The Longer silicore Story
+
+R needs an idiom for an abstract representation of shapes, I don't want developers to have to care about a particular format - I need a representation that's universal and that any format can be converted to, and that any format can be creadted from.
+
+I've learnt a lot with [hypertidy/silicate](https://github.com/hypertidy/silicate) - and settled on a few models that make for a very general framework for various types of hierarchical data. They are `SC` (universal, edges+vertices), `TRI` (triangles+vertices), `ARC` (shared-boundaries, or unique-paths+vertices), `PATH` (simple features alike, composed of sequential paths of coordinates). However, these aren't fundamental enough, and different applications require either more models or some combination of these. For example `anglr::QUAD` can do rasters, and allow them to be losslessly reprojected, dense-storage of virtual rect polygons, and TRI can be thought of as either PATH, or SC but oftens needs a little of both.
+
+All of these models also store **object**, a kind of placeholder for grouping primitives, lines, or polygons into higher levels. Object can be virtual - or missing - and that leads to efficiencies like a virtual vertex pool for QUAD, which *virtual* (i.e. doesn't exist, purely a few parameters) right up until we actual want a reprojected set of rects, or we want to cull out some of the primitives.
+
+And then it gets messy again, none of these is really bare-bones or universal in current form.
+There's no POINT model, and so we get funny quirks like having a super-powerful edge-based triangulation engine (`anglr::DEL`) as well as a path-based one (TRI, via `decido`) but no obvious way to build a TRI from a set of points.I've been using a degenerate form of PATH, a kind of trick that treats a point as a zero-length line, but again that needs extra stuff to keep it efficient and virtualize the links and groupings.
+
+## The Crazy Idea
+
+### Paths
+
+If you have something PATH-like (sf/sp/osm/spatstat/GPS polygons, lines) then the natural decomposition is 
+
+i) the coordinates 
+ii) the edges (if any)
+iii) the paths (if any)
+iv) higher levels (i.e. features, the objects, if any)
+
+(The *if any* applies to i) as well, but in the sens of "what geometry", we might have a schedule for future data collection, and all we have is a time coordinate, more on that later). 
+
+For i) I mean *all coordinates*, including duplication, in the order they come (i.e. all sf matrices rbinded together, like st_coordinates does).
+For a) I mean unique coordinates (unique in x/y, or x/y/z or whatever geometric space it was).
+For ii) I mean a tiny data frame, a record for each path of its length (nrow of the sf atomic matrix), its type (POLY, LINE,...),  the feature id, the sub-feature part-id, is it a hole, and whatever else. The key part of ii) is that it gives you a run-length encoding of how to split up the coordinates in i) to reconstruct the source, or to construct something analogous to it.
+For iii) that can actually be virtual, copied out onto every path ii) or stored however, it's not complicated but key is not copying everything onto every coordinate!
+
+I forgot, key to i), ii) and iii) was iv) the two-column table of edges, each pairing in order through each path. (It should have been ii, but I'll rewrite elswhere rather than edit here. From this set we can create other types, key possible steps are de-duplication in geometry (create unique vertices, and badge edge-node indexes uniquely) which gives topology for neighbours or 3D graphics,  or culling out holes, splitting paths into simpler features and so on.  iv) is analogous to b) but applied to all coordinates, where b) implies a dense vertex pool (it doesn't really matter, some ops need unique vertices, and some apps will have a different def i.e. unique in x/y/z rather than x/y so it needs to be open for re-indexing).
+
+
+### Primitives
+
+If you have something SC or TRI-like (rgl, icosa, geometry::delaunayn) composed of edges or triangles, constant-length indexes into a vertex pool) then the natural decomposition is 
+
+a) the vertices 
+b) the primitives (two nodes for an edge, three for a triangle, etc.). 
+c) higher level groupings
+
+
+I'm loathe to put classes or formal definitions on these, though some kind of high level summary would be nice. I see this as a core part of an R API for working within and around spatial data in its various forms. It's meant to be bare-metal, but accessible - very flexible, you can shoot your foot but with lots of basics available like point-in-poly, path-reconstruction-from-edges, distance-to and distance-from, discretization and other forms of coordinate transformation (that's my list of things that I think are core spatial, for a bare-bones toolkit). 
+
+It makes a new POINT model trivial, it doesn't really need to be defined it's just i) all the coordinates and (optionally) ii) a set of values on each point, or a kind of group-table - how many coordinates per multipoint, a bit like path. So we can infer a base-level intention or meaning of this bag of entities purely from what's present, or not, and we apply our own meaning or intention without any baggage holding us back or requiring quirky workarounds for different formats. 
+
+It means we can have the core set i) coordinates iv) edges which allows most analysis and conversion, and optionally keep track of ii) paths and their groupings/properties in iii). The application designer gets to choose when and how to ignore or persist the original information, and importantly allows silicate-like models to know when those records become invalidated, i.e. we've done some insane triangulation or edge-collapse or modification, we can't trust ii) anymore, but we could create new ones by tracing through edges and finding external boundaries, vs. shared internal ones
+
+I've implemented this in bare prototype form here [silicore](https://github.com/hypertidy/silicore).   I don't really intend silicore to exist long term in any meaningful way, I hope that it helps define the core of silicate once I try out these workflows a bit more. Keen for any feedback!  
+
