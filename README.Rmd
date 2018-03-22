@@ -118,11 +118,7 @@ R needs an idiom for an abstract representation of shapes, I don't want develope
 I've learnt a lot with [hypertidy/silicate](https://github.com/hypertidy/silicate) - and settled on a few models that make for a very general framework for various types of hierarchical data. They are `SC` (universal, edges+vertices), `TRI` (triangles+vertices), `ARC` (shared-boundaries, or unique-paths+vertices), `PATH` (simple features alike, composed of sequential paths of coordinates). However, these aren't fundamental enough, and different applications require either more models defined, or to use some combination of these. For example `anglr::QUAD` can do rasters, and allow them to be losslessly reprojected, dense-storage of virtual rect polygons, and TRI can be thought of as either PATH, or SC but oftens needs a little of both.
 
 
-<ol type="a">
-  <li>Coffee</li>
-  <li>Tea</li>
-  <li>Milk</li>
-</ol>
+
 
 
 All of these models also store **object**, a kind of placeholder for grouping primitives, lines, or polygons into higher levels. Object can be virtual - or missing - and that leads to efficiencies like a virtual vertex pool for QUAD, which is *virtual* (stored as a few parameters) right up until we actual want a reprojected set of rects, or we want to cull out some of the primitives.
@@ -136,23 +132,26 @@ There's no POINT model, and so we get funny quirks like having a super-powerful 
 
 If you have something PATH-like (sf/sp/osm/spatstat/GPS polygons, lines) then the natural decomposition is 
 
-i) the coordinates 
-ii) the edges (if any)
-iii) the paths (if any)
-iv) higher levels (i.e. features, the objects, if any)
+<ol type="i">
+ <li>the coordinates </li>
+ <li>the edges (if any)</li>
+ <li>the paths (if any)</li>
+ <li>higher levels (i.e. features, the objects, if any)</li>
+</ol>
 
 
 
-(The *if any* applies to i) as well, but in the sens of "what geometry", we might have a schedule for future data collection, and all we have is a time coordinate - in other cases we might know the topology, there are ten edges, but we don't know the value of their nodes yet, or perhaps they change over time). 
+(The *if any* applies to i) as well, but in the sense of "what geometry", we might have a schedule for future data collection, and all we have is a time coordinate - in other cases we might know the topology, there are ten edges, but we don't know the value of their nodes yet, or perhaps they change over time). 
 
 ### Primitives
 
 If we have something SC or TRI-like (rgl, icosa, geometry::delaunayn) composed of edges or triangles, constant-length indexes into a vertex pool) then the natural decomposition is 
 
-a) the vertices 
-b) the primitives (two nodes for an edge, three for a triangle, etc.). 
-c) higher level groupings
-
+<ol type="a">
+ <li>the vertices </li>
+ <li>the primitives (two nodes for an edge, three for a triangle, etc.)</li> 
+ <li>higher level groupings, such as triangle-belong-polygon</li>
+</ol>
 
 For i) I mean *all coordinates*, including duplication, in the order they come (i.e. all sf matrices rbinded together, like st_coordinates does).
 For a) I mean unique coordinates (unique in x/y, or x/y/z or whatever geometric space it was).

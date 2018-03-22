@@ -30,21 +30,21 @@ sc_edge(minimal_mesh)     ## relational labels
 #> # A tibble: 15 x 3
 #>    .vertex0   .vertex1   edge_     
 #>    <chr>      <chr>      <chr>     
-#>  1 fc6c1cd13b 43abd2fcb0 746da8f7e4
-#>  2 43abd2fcb0 3b3e5bd015 69ab76a2e7
-#>  3 3b3e5bd015 b58bcd847d 20d06a1532
-#>  4 b58bcd847d 0ba2326a0f 296d3f7719
-#>  5 0ba2326a0f 54aa78fa82 01ef7f396b
-#>  6 54aa78fa82 f491eb1f98 c2f844f05b
-#>  7 f491eb1f98 fc6c1cd13b abda0e82aa
-#>  8 92f3167e61 672dd3d95f af2b65d1df
-#>  9 672dd3d95f 847c3637ed 0c5a2fb0e3
-#> 10 847c3637ed 30b1635c09 d5a9fd481f
-#> 11 30b1635c09 8f786085e3 de296cd00f
-#> 12 8f786085e3 92f3167e61 bc9906cbb7
-#> 13 54aa78fa82 c8e8fe7c54 30c041f75b
-#> 14 c8e8fe7c54 67efd02ad7 334d00688b
-#> 15 67efd02ad7 f491eb1f98 aa12580325
+#>  1 a88bf37840 3bbad24a2a 3b5457bf02
+#>  2 3bbad24a2a 2219aa8999 43ef8fe24d
+#>  3 2219aa8999 5a6333ca58 c6868961c7
+#>  4 5a6333ca58 3d9f81ede1 c0c227b508
+#>  5 3d9f81ede1 72368840d8 3a92af83c3
+#>  6 72368840d8 e0521e8663 147e49aafa
+#>  7 e0521e8663 a88bf37840 2223246392
+#>  8 bc0c05f18c d73799b93c c3e683506f
+#>  9 d73799b93c b67ed8ecdc 2033509aa1
+#> 10 b67ed8ecdc 34a0ba2d1f 5ceabeaac2
+#> 11 34a0ba2d1f aaaf8ae78c e8cb54e849
+#> 12 aaaf8ae78c bc0c05f18c 808e33932b
+#> 13 72368840d8 5fc65fe9b9 01860484f4
+#> 14 5fc65fe9b9 02c8b9b151 60de286446
+#> 15 02c8b9b151 e0521e8663 12f769e839
 SC0(minimal_mesh)$segment ## purely structure index
 #> # A tibble: 16 x 2
 #>     .vx0  .vx1
@@ -72,9 +72,9 @@ sc_path(minimal_mesh)
 #> # A tibble: 3 x 7
 #>    ncol type         subobject object object_    path_      ncoords_
 #>   <int> <chr>            <int>  <int> <chr>      <chr>         <int>
-#> 1     2 MULTIPOLYGON         1      1 f7c088ba3e 1e257fa84e        8
-#> 2     2 MULTIPOLYGON         1      1 f7c088ba3e e06e67154a        6
-#> 3     2 MULTIPOLYGON         1      2 565676f05b 4a5fd36519        5
+#> 1     2 MULTIPOLYGON         1      1 d4cd534850 590f6b1b4c        8
+#> 2     2 MULTIPOLYGON         1      1 d4cd534850 2cb4fa6a0b        6
+#> 3     2 MULTIPOLYGON         1      2 6019d0b9fe c9dbd91a24        5
 SC0(minimal_mesh)$geometry ## no relational labels
 #> # A tibble: 3 x 6
 #>    nrow  ncol type         subobject object  path
@@ -105,8 +105,8 @@ Performance is good.
 rbenchmark::benchmark(SC0(minimal_mesh), 
                       SC(minimal_mesh))
 #>                test replications elapsed relative user.self sys.self
-#> 2  SC(minimal_mesh)          100   2.034    1.569     2.027    0.004
-#> 1 SC0(minimal_mesh)          100   1.296    1.000     1.272    0.024
+#> 2  SC(minimal_mesh)          100   2.135    1.549     2.126    0.008
+#> 1 SC0(minimal_mesh)          100   1.378    1.000     1.350    0.028
 #>   user.child sys.child
 #> 2          0         0
 #> 1          0         0
@@ -116,8 +116,8 @@ rbenchmark::benchmark(SC0(minimal_mesh),
 rbenchmark::benchmark(SC0(inlandwaters), 
                       SC(inlandwaters), replications = 10)
 #>                test replications elapsed relative user.self sys.self
-#> 2  SC(inlandwaters)           10  14.872   33.345    14.825    0.048
-#> 1 SC0(inlandwaters)           10   0.446    1.000     0.442    0.004
+#> 2  SC(inlandwaters)           10  16.069   33.132    16.008    0.056
+#> 1 SC0(inlandwaters)           10   0.485    1.000     0.477    0.008
 #>   user.child sys.child
 #> 2          0         0
 #> 1          0         0
@@ -192,17 +192,6 @@ R needs an idiom for an abstract representation of shapes, I don't want develope
 
 I've learnt a lot with [hypertidy/silicate](https://github.com/hypertidy/silicate) - and settled on a few models that make for a very general framework for various types of hierarchical data. They are `SC` (universal, edges+vertices), `TRI` (triangles+vertices), `ARC` (shared-boundaries, or unique-paths+vertices), `PATH` (simple features alike, composed of sequential paths of coordinates). However, these aren't fundamental enough, and different applications require either more models defined, or to use some combination of these. For example `anglr::QUAD` can do rasters, and allow them to be losslessly reprojected, dense-storage of virtual rect polygons, and TRI can be thought of as either PATH, or SC but oftens needs a little of both.
 
-<ol type="a">
-<li>
-Coffee
-</li>
-<li>
-Tea
-</li>
-<li>
-Milk
-</li>
-</ol>
 All of these models also store **object**, a kind of placeholder for grouping primitives, lines, or polygons into higher levels. Object can be virtual - or missing - and that leads to efficiencies like a virtual vertex pool for QUAD, which is *virtual* (stored as a few parameters) right up until we actual want a reprojected set of rects, or we want to cull out some of the primitives.
 
 And then it gets messy again, none of these is really bare-bones or universal in current form. There's no POINT model, and so we get funny quirks like having a super-powerful edge-based triangulation engine (`anglr::DEL`) as well as a path-based one (TRI, via `decido`) but no obvious way to build a TRI from a set of points.I've been using a degenerate form of PATH, a kind of trick that treats a point as a zero-length line, but again that needs extra stuff to keep it efficient and virtualize the links and groupings.
@@ -214,21 +203,37 @@ The Crazy Idea
 
 If you have something PATH-like (sf/sp/osm/spatstat/GPS polygons, lines) then the natural decomposition is
 
-1.  the coordinates
-2.  the edges (if any)
-3.  the paths (if any)
-4.  higher levels (i.e. features, the objects, if any)
-
-(The *if any* applies to i) as well, but in the sens of "what geometry", we might have a schedule for future data collection, and all we have is a time coordinate - in other cases we might know the topology, there are ten edges, but we don't know the value of their nodes yet, or perhaps they change over time).
+<ol type="i">
+<li>
+the coordinates
+</li>
+<li>
+the edges (if any)
+</li>
+<li>
+the paths (if any)
+</li>
+<li>
+higher levels (i.e. features, the objects, if any)
+</li>
+</ol>
+(The *if any* applies to i) as well, but in the sense of "what geometry", we might have a schedule for future data collection, and all we have is a time coordinate - in other cases we might know the topology, there are ten edges, but we don't know the value of their nodes yet, or perhaps they change over time).
 
 ### Primitives
 
 If we have something SC or TRI-like (rgl, icosa, geometry::delaunayn) composed of edges or triangles, constant-length indexes into a vertex pool) then the natural decomposition is
 
-1.  the vertices
-2.  the primitives (two nodes for an edge, three for a triangle, etc.).
-3.  higher level groupings
-
+<ol type="a">
+<li>
+the vertices
+</li>
+<li>
+the primitives (two nodes for an edge, three for a triangle, etc.)
+</li>
+<li>
+higher level groupings, such as triangle-belong-polygon
+</li>
+</ol>
 For i) I mean *all coordinates*, including duplication, in the order they come (i.e. all sf matrices rbinded together, like st\_coordinates does). For a) I mean unique coordinates (unique in x/y, or x/y/z or whatever geometric space it was).
 
 For ii) this is the straightforward index of every pair of coordinates from every path, the two-column table of edges, each pairing of coordinates *in order* through each path. It's a natural starting point for many analyses (including [fasterize](https://github.com/ecohealthalliance/fasterize), transport applications like [dodgr](https://github.com/ATFutures/dodgr), constrained Delaunay triangulations, any topological or neighbour-based spatial analysis, visualizations with `rgl` and so forth). Some of these require a dense vertex set, only unique coordinates - not all instances of them, which is why I make this distinction already here. Not all applications need unique coordinates, and one of the silicate lessons is that premature densification is not your friend. A nuance is when or if to also deduplicate edges themselves, as they occur in directed or undirected forms.
