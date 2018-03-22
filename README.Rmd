@@ -113,11 +113,19 @@ for that thing, I'll be really grateful.
 
 ## The Longer silicore Story
 
-R needs an idiom for an abstract representation of shapes, I don't want developers to have to care about a particular format - I need a representation that's universal and that any format can be converted to, and that any format can be creadted from.
+R needs an idiom for an abstract representation of shapes, I don't want developers to have to care about a particular format - I need a representation that's universal and that any format can be converted to, and that any format can be created from.
 
-I've learnt a lot with [hypertidy/silicate](https://github.com/hypertidy/silicate) - and settled on a few models that make for a very general framework for various types of hierarchical data. They are `SC` (universal, edges+vertices), `TRI` (triangles+vertices), `ARC` (shared-boundaries, or unique-paths+vertices), `PATH` (simple features alike, composed of sequential paths of coordinates). However, these aren't fundamental enough, and different applications require either more models or some combination of these. For example `anglr::QUAD` can do rasters, and allow them to be losslessly reprojected, dense-storage of virtual rect polygons, and TRI can be thought of as either PATH, or SC but oftens needs a little of both.
+I've learnt a lot with [hypertidy/silicate](https://github.com/hypertidy/silicate) - and settled on a few models that make for a very general framework for various types of hierarchical data. They are `SC` (universal, edges+vertices), `TRI` (triangles+vertices), `ARC` (shared-boundaries, or unique-paths+vertices), `PATH` (simple features alike, composed of sequential paths of coordinates). However, these aren't fundamental enough, and different applications require either more models defined, or to use some combination of these. For example `anglr::QUAD` can do rasters, and allow them to be losslessly reprojected, dense-storage of virtual rect polygons, and TRI can be thought of as either PATH, or SC but oftens needs a little of both.
 
-All of these models also store **object**, a kind of placeholder for grouping primitives, lines, or polygons into higher levels. Object can be virtual - or missing - and that leads to efficiencies like a virtual vertex pool for QUAD, which *virtual* (i.e. doesn't exist, purely a few parameters) right up until we actual want a reprojected set of rects, or we want to cull out some of the primitives.
+
+<ol type="a">
+  <li>Coffee</li>
+  <li>Tea</li>
+  <li>Milk</li>
+</ol>
+
+
+All of these models also store **object**, a kind of placeholder for grouping primitives, lines, or polygons into higher levels. Object can be virtual - or missing - and that leads to efficiencies like a virtual vertex pool for QUAD, which is *virtual* (stored as a few parameters) right up until we actual want a reprojected set of rects, or we want to cull out some of the primitives.
 
 And then it gets messy again, none of these is really bare-bones or universal in current form.
 There's no POINT model, and so we get funny quirks like having a super-powerful edge-based triangulation engine (`anglr::DEL`) as well as a path-based one (TRI, via `decido`) but no obvious way to build a TRI from a set of points.I've been using a degenerate form of PATH, a kind of trick that treats a point as a zero-length line, but again that needs extra stuff to keep it efficient and virtualize the links and groupings.

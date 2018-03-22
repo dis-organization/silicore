@@ -30,21 +30,21 @@ sc_edge(minimal_mesh)     ## relational labels
 #> # A tibble: 15 x 3
 #>    .vertex0   .vertex1   edge_     
 #>    <chr>      <chr>      <chr>     
-#>  1 a90a31277c 9ae21827c4 327b8c7aba
-#>  2 9ae21827c4 932837a44e 5e1783be5a
-#>  3 932837a44e 87d5d8ee36 d4f17ad9ab
-#>  4 87d5d8ee36 8c44cdcb96 9d4fb119e2
-#>  5 8c44cdcb96 3b84b8855d 7e8ba44272
-#>  6 3b84b8855d 6738b31dae dfca64b29e
-#>  7 6738b31dae a90a31277c a9b3357b8d
-#>  8 b45333fd81 28cb3097cd 9eb0b672a6
-#>  9 28cb3097cd 5243a4ea05 5414b6b7e4
-#> 10 5243a4ea05 b39c92c25d 021d45057e
-#> 11 b39c92c25d b27e289e29 8c15c0e739
-#> 12 b27e289e29 b45333fd81 76c0b7d075
-#> 13 3b84b8855d fbc8a4e125 8ff7f2ced7
-#> 14 fbc8a4e125 7d8cb3e970 e77b02bee6
-#> 15 7d8cb3e970 6738b31dae 9e6b1f652a
+#>  1 fc6c1cd13b 43abd2fcb0 746da8f7e4
+#>  2 43abd2fcb0 3b3e5bd015 69ab76a2e7
+#>  3 3b3e5bd015 b58bcd847d 20d06a1532
+#>  4 b58bcd847d 0ba2326a0f 296d3f7719
+#>  5 0ba2326a0f 54aa78fa82 01ef7f396b
+#>  6 54aa78fa82 f491eb1f98 c2f844f05b
+#>  7 f491eb1f98 fc6c1cd13b abda0e82aa
+#>  8 92f3167e61 672dd3d95f af2b65d1df
+#>  9 672dd3d95f 847c3637ed 0c5a2fb0e3
+#> 10 847c3637ed 30b1635c09 d5a9fd481f
+#> 11 30b1635c09 8f786085e3 de296cd00f
+#> 12 8f786085e3 92f3167e61 bc9906cbb7
+#> 13 54aa78fa82 c8e8fe7c54 30c041f75b
+#> 14 c8e8fe7c54 67efd02ad7 334d00688b
+#> 15 67efd02ad7 f491eb1f98 aa12580325
 SC0(minimal_mesh)$segment ## purely structure index
 #> # A tibble: 16 x 2
 #>     .vx0  .vx1
@@ -72,9 +72,9 @@ sc_path(minimal_mesh)
 #> # A tibble: 3 x 7
 #>    ncol type         subobject object object_    path_      ncoords_
 #>   <int> <chr>            <int>  <int> <chr>      <chr>         <int>
-#> 1     2 MULTIPOLYGON         1      1 f13d960131 2976318ea9        8
-#> 2     2 MULTIPOLYGON         1      1 f13d960131 c7221528b2        6
-#> 3     2 MULTIPOLYGON         1      2 123a6c630f 81a34e1528        5
+#> 1     2 MULTIPOLYGON         1      1 f7c088ba3e 1e257fa84e        8
+#> 2     2 MULTIPOLYGON         1      1 f7c088ba3e e06e67154a        6
+#> 3     2 MULTIPOLYGON         1      2 565676f05b 4a5fd36519        5
 SC0(minimal_mesh)$geometry ## no relational labels
 #> # A tibble: 3 x 6
 #>    nrow  ncol type         subobject object  path
@@ -105,8 +105,8 @@ Performance is good.
 rbenchmark::benchmark(SC0(minimal_mesh), 
                       SC(minimal_mesh))
 #>                test replications elapsed relative user.self sys.self
-#> 2  SC(minimal_mesh)          100   2.037    1.586     2.021    0.012
-#> 1 SC0(minimal_mesh)          100   1.284    1.000     1.266    0.016
+#> 2  SC(minimal_mesh)          100   2.034    1.569     2.027    0.004
+#> 1 SC0(minimal_mesh)          100   1.296    1.000     1.272    0.024
 #>   user.child sys.child
 #> 2          0         0
 #> 1          0         0
@@ -116,8 +116,8 @@ rbenchmark::benchmark(SC0(minimal_mesh),
 rbenchmark::benchmark(SC0(inlandwaters), 
                       SC(inlandwaters), replications = 10)
 #>                test replications elapsed relative user.self sys.self
-#> 2  SC(inlandwaters)           10  15.005   33.344    14.980    0.024
-#> 1 SC0(inlandwaters)           10   0.450    1.000     0.448    0.000
+#> 2  SC(inlandwaters)           10  14.872   33.345    14.825    0.048
+#> 1 SC0(inlandwaters)           10   0.446    1.000     0.442    0.004
 #>   user.child sys.child
 #> 2          0         0
 #> 1          0         0
@@ -188,11 +188,22 @@ If anyone can come up with a better name than `gibble` or `geometry` or `geometr
 The Longer silicore Story
 -------------------------
 
-R needs an idiom for an abstract representation of shapes, I don't want developers to have to care about a particular format - I need a representation that's universal and that any format can be converted to, and that any format can be creadted from.
+R needs an idiom for an abstract representation of shapes, I don't want developers to have to care about a particular format - I need a representation that's universal and that any format can be converted to, and that any format can be created from.
 
-I've learnt a lot with [hypertidy/silicate](https://github.com/hypertidy/silicate) - and settled on a few models that make for a very general framework for various types of hierarchical data. They are `SC` (universal, edges+vertices), `TRI` (triangles+vertices), `ARC` (shared-boundaries, or unique-paths+vertices), `PATH` (simple features alike, composed of sequential paths of coordinates). However, these aren't fundamental enough, and different applications require either more models or some combination of these. For example `anglr::QUAD` can do rasters, and allow them to be losslessly reprojected, dense-storage of virtual rect polygons, and TRI can be thought of as either PATH, or SC but oftens needs a little of both.
+I've learnt a lot with [hypertidy/silicate](https://github.com/hypertidy/silicate) - and settled on a few models that make for a very general framework for various types of hierarchical data. They are `SC` (universal, edges+vertices), `TRI` (triangles+vertices), `ARC` (shared-boundaries, or unique-paths+vertices), `PATH` (simple features alike, composed of sequential paths of coordinates). However, these aren't fundamental enough, and different applications require either more models defined, or to use some combination of these. For example `anglr::QUAD` can do rasters, and allow them to be losslessly reprojected, dense-storage of virtual rect polygons, and TRI can be thought of as either PATH, or SC but oftens needs a little of both.
 
-All of these models also store **object**, a kind of placeholder for grouping primitives, lines, or polygons into higher levels. Object can be virtual - or missing - and that leads to efficiencies like a virtual vertex pool for QUAD, which *virtual* (i.e. doesn't exist, purely a few parameters) right up until we actual want a reprojected set of rects, or we want to cull out some of the primitives.
+<ol type="a">
+<li>
+Coffee
+</li>
+<li>
+Tea
+</li>
+<li>
+Milk
+</li>
+</ol>
+All of these models also store **object**, a kind of placeholder for grouping primitives, lines, or polygons into higher levels. Object can be virtual - or missing - and that leads to efficiencies like a virtual vertex pool for QUAD, which is *virtual* (stored as a few parameters) right up until we actual want a reprojected set of rects, or we want to cull out some of the primitives.
 
 And then it gets messy again, none of these is really bare-bones or universal in current form. There's no POINT model, and so we get funny quirks like having a super-powerful edge-based triangulation engine (`anglr::DEL`) as well as a path-based one (TRI, via `decido`) but no obvious way to build a TRI from a set of points.I've been using a degenerate form of PATH, a kind of trick that treats a point as a zero-length line, but again that needs extra stuff to keep it efficient and virtualize the links and groupings.
 
