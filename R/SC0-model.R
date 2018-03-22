@@ -32,12 +32,7 @@ SC0.default <- function(x, ...) {
     dplyr::mutate(.vx0 = vertex,   ## specify in segment terms 
            .vx1 = vertex + 1L) %>% 
     dplyr::group_by(path)
-    
-    #if (all(grepl("poly", gmap$type, ignore.case = TRUE))) {
-      segs <- dplyr::slice(segs, -n()) ## don't know why I thought this was poly-only?
-      ## but TODO is check we aren't getting a degenerate final segment in closing
-      ## polygon rings?
-    #}
+    segs <- dplyr::slice(segs, -n()) 
     segs <- segs %>% dplyr::ungroup() %>% 
       dplyr::transmute(.vx0, .vx1)
   
