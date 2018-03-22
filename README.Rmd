@@ -133,30 +133,40 @@ ii) the edges (if any)
 iii) the paths (if any)
 iv) higher levels (i.e. features, the objects, if any)
 
-(The *if any* applies to i) as well, but in the sens of "what geometry", we might have a schedule for future data collection, and all we have is a time coordinate, more on that later). 
 
-For i) I mean *all coordinates*, including duplication, in the order they come (i.e. all sf matrices rbinded together, like st_coordinates does).
-For a) I mean unique coordinates (unique in x/y, or x/y/z or whatever geometric space it was).
-For ii) I mean a tiny data frame, a record for each path of its length (nrow of the sf atomic matrix), its type (POLY, LINE,...),  the feature id, the sub-feature part-id, is it a hole, and whatever else. The key part of ii) is that it gives you a run-length encoding of how to split up the coordinates in i) to reconstruct the source, or to construct something analogous to it.
-For iii) that can actually be virtual, copied out onto every path ii) or stored however, it's not complicated but key is not copying everything onto every coordinate!
 
-I forgot, key to i), ii) and iii) was iv) the two-column table of edges, each pairing in order through each path. (It should have been ii, but I'll rewrite elswhere rather than edit here. From this set we can create other types, key possible steps are de-duplication in geometry (create unique vertices, and badge edge-node indexes uniquely) which gives topology for neighbours or 3D graphics,  or culling out holes, splitting paths into simpler features and so on.  iv) is analogous to b) but applied to all coordinates, where b) implies a dense vertex pool (it doesn't really matter, some ops need unique vertices, and some apps will have a different def i.e. unique in x/y/z rather than x/y so it needs to be open for re-indexing).
-
+(The *if any* applies to i) as well, but in the sens of "what geometry", we might have a schedule for future data collection, and all we have is a time coordinate - in other cases we might know the topology, there are ten edges, but we don't know the value of their nodes yet, or perhaps they change over time). 
 
 ### Primitives
 
-If you have something SC or TRI-like (rgl, icosa, geometry::delaunayn) composed of edges or triangles, constant-length indexes into a vertex pool) then the natural decomposition is 
+If we have something SC or TRI-like (rgl, icosa, geometry::delaunayn) composed of edges or triangles, constant-length indexes into a vertex pool) then the natural decomposition is 
 
 a) the vertices 
 b) the primitives (two nodes for an edge, three for a triangle, etc.). 
 c) higher level groupings
 
 
+For i) I mean *all coordinates*, including duplication, in the order they come (i.e. all sf matrices rbinded together, like st_coordinates does).
+For a) I mean unique coordinates (unique in x/y, or x/y/z or whatever geometric space it was).
+
+For ii) this is the straightforward index of every pair of coordinates from every path, the two-column table of edges, each pairing of coordinates *in order* through each path. It's a natural starting point for many analyses (including [fasterize](https://github.com/ecohealthalliance/fasterize), transport applications like [dodgr](https://github.com/ATFutures/dodgr), constrained Delaunay triangulations, any topological or neighbour-based spatial analysis, visualizations with `rgl` and so forth). Some of these require a dense vertex set, only unique coordinates - not all instances of them, which is why I make this distinction already here. Not all applications need unique coordinates, and one of the silicate lessons is that premature densification is not your friend.  A nuance is when or if to also deduplicate edges themselves, as they occur in directed or undirected forms. 
+
+Crucially, from this set of edges and coordinates we can create other types. Key examples are de-duplication in geometry (create unique vertices, and badge edge-node indexes uniquely) which gives topology for neighbours or 3D graphics,  or culling out holes, splitting paths into simpler features and so on.  Here ii) is analogous to b) but applied to all coordinates, where b) implies a dense vertex pool (it doesn't really matter, some ops need unique vertices, and some apps will have a different def i.e. unique in x/y/z rather than x/y so it needs to be open for re-indexing).
+
+
+For iii) this is every separate sequence of coordinates, linesrings or rings. This *tiny*, a single record for each path of its length (`nrow` of the `sf` atomic matrix), its type (POLY, LINE,...),  the feature id, the sub-feature part-id, is it a hole, and whatever else. The key part of iii) is that it gives you a run-length encoding of how to split up the coordinates in i) to reconstruct the source, or to construct something analogous to it.
+
+For iv) that can actually be virtual, copied out onto every path iii) or stored by other means, it's not complicated - the real key is not copying everything onto every coordinate! (This was a really confusing part of `ggplot2` with fortify, and remains a gap in that framework that projects like `ggraph` and `tidygraph` are aiming to fill). 
+
+
+
+
+
 I'm loathe to put classes or formal definitions on these, though some kind of high level summary would be nice. I see this as a core part of an R API for working within and around spatial data in its various forms. It's meant to be bare-metal, but accessible - very flexible, you can shoot your foot but with lots of basics available like point-in-poly, path-reconstruction-from-edges, distance-to and distance-from, discretization and other forms of coordinate transformation (that's my list of things that I think are core spatial, for a bare-bones toolkit). 
 
-It makes a new POINT model trivial, it doesn't really need to be defined it's just i) all the coordinates and (optionally) ii) a set of values on each point, or a kind of group-table - how many coordinates per multipoint, a bit like path. So we can infer a base-level intention or meaning of this bag of entities purely from what's present, or not, and we apply our own meaning or intention without any baggage holding us back or requiring quirky workarounds for different formats. 
+It makes a new POINT model trivial, it doesn't really need to be defined it's just i) all the coordinates and (optionally) iii) or iv) a set of values on each point, or a kind of group-table - how many coordinates per multipoint, a bit like path. So we can infer a base-level intention or meaning of this bag of entities purely from what's present, or not, and we apply our own meaning or intention without any baggage holding us back or requiring quirky workarounds for different formats. 
 
-It means we can have the core set i) coordinates iv) edges which allows most analysis and conversion, and optionally keep track of ii) paths and their groupings/properties in iii). The application designer gets to choose when and how to ignore or persist the original information, and importantly allows silicate-like models to know when those records become invalidated, i.e. we've done some insane triangulation or edge-collapse or modification, we can't trust ii) anymore, but we could create new ones by tracing through edges and finding external boundaries, vs. shared internal ones
+It means we can have the core set i) coordinates and ii) edges which allows most analysis and conversion, and optionally keep track of iii) paths and their groupings/properties in iv). The application designer gets to choose when and how to ignore or persist the original information, and importantly allows silicate-like models to know when those records become invalidated, i.e. we've done some insane triangulation or edge-collapse or modification, we can't trust ii) anymore, but we could create new ones by tracing through edges and finding external boundaries, vs. shared internal ones
 
 I've implemented this in bare prototype form here [silicore](https://github.com/hypertidy/silicore).   I don't really intend silicore to exist long term in any meaningful way, I hope that it helps define the core of silicate once I try out these workflows a bit more. Keen for any feedback!  
 
